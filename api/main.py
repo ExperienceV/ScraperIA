@@ -159,7 +159,7 @@ async def welcome():
         </div>
         
         <footer>
-            <p>© 2023 AliExpress Scraper API | Powered by FastAPI</p>
+            <p>© 2025 AliExpress Scraper API | Powered by FastAPI</p>
         </footer>
     </div>
 </body>
