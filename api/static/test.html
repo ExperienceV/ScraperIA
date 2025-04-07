@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scraper Tester</title>
+    <link rel="stylesheet" href="/static/styles/test.css">
+    <style>
+        /* Estilos específicos del formulario */
+        .search-form { background: white; padding: 2rem; border-radius: 8px; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; }
+        button { background-color: var(--primary-color); color: white; padding: 1rem; }
+        .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+        .product-card { background: white; border-radius: 8px; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Scraper Tester</h1>
+            <a href="/" class="btn">← Back Home</a>
+        </header>
+        
+        <form id="searchForm" action="/scrape" method="get">
+            <div class="form-group">
+                <label for="product_name">Product:</label>
+                <input type="text" id="product_name" name="product_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="top_n">Total of products:</label>
+                <input type="number" id="top_n" name="top_n" min="1" max="20" value="10">
+            </div>
+            
+            <button type="submit">Search</button>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Find products in AliExpress...</p>
+            </div>
+        </form>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const resultsContainer = document.getElementById('results');
+            const loadingIndicator = document.getElementById('loading');
+            
+            // Bloquear el botón y mostrar carga
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Buscando...';
+            loadingIndicator.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+            
+            try {
+                const response = await fetch(`/scrape?${params}`);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Error en la búsqueda');
+                
+                displayResults(data);
+            } catch (error) {
+                resultsContainer.innerHTML = `
+                    <div class="error-message">
+                        ${error.message}
+                    </div>
+                `;
+            } finally {
+                // Restaurar el botón y ocultar carga
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Buscar';
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    
+        function displayResults(products) {
+    const container = document.getElementById('results');
+    container.innerHTML = '';
+    
+    if (!products || products.length === 0) {
+        container.innerHTML = '<p class="no-results">No se encontraron productos</p>';
+        return;
+    }
+    
+    products.forEach(product => {
+        // Verificar si el producto tiene la estructura esperada
+        if (!product || typeof product !== 'object') {
+            console.error('Producto inválido:', product);
+            return;
+        }
+        
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        // Construir la URL de la imagen correctamente
+        const imageUrl = product.thumbnail.startsWith('http') ? 
+            product.thumbnail : 
+            `https://${product.thumbnail}`;
+        
+        // Crear el HTML de la tarjeta
+        card.innerHTML = `
+            <img src="${imageUrl}" alt="${product.title || 'Product image'}" class="product-img" 
+                 onerror="this.src='https://via.placeholder.com/200?text=Imagen+no+disponible'">
+            <div class="product-info">
+                <h3 class="product-title">${product.title || 'Sin título'}</h3>
+                <div class="product-price">${product.currency || 'USD'} ${product.price?.toFixed(2) || '0.00'}</div>
+                <div class="product-meta">
+                    <span class="product-rating">⭐ ${product.rating || '0'}/5</span>
+                    <span class="product-sales">• ${product.trade || '0 vendidos'}</span>
+                </div>
+                <div class="product-store">${product.store?.name || 'Tienda no disponible'}</div>
+                <a href="${product.url || '#'}" target="_blank" class="product-link">Ver producto</a>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+    </script>
+</body>
+</html>

@@ -1,8 +1,11 @@
 from icecream import ic
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from functions.aliexpress_scraper import run
+from fastapi.middleware.cors import CORSMiddleware
 from functions.llm_integration import rank_products_with_llm
+from pathlib import Path
 
 app = FastAPI(
     title="AliExpress Scraper API",
@@ -10,6 +13,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción, reemplaza "*" con tu dominio
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/", response_class=HTMLResponse)
 async def welcome():
     """
@@ -22,149 +32,13 @@ async def welcome():
             - Example endpoint
             - Link to interactive docs
     """
-    return """
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AliExpress Scraper API</title>
-    <style>
-        :root {
-            --primary-color: #ff6f00;
-            --secondary-color: #ffab40;
-            --dark-color: #333;
-            --light-color: #f5f5f5;
-            --success-color: #4caf50;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 1rem;
-        }
-        
-        h1 {
-            color: var(--primary-color);
-            margin: 0;
-        }
-        
-        .logo {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .api-info {
-            background-color: #f9f9f9;
-            padding: 1.5rem;
-            border-radius: 6px;
-            margin: 1.5rem 0;
-        }
-        
-        .endpoint {
-            background-color: var(--light-color);
-            padding: 1rem;
-            border-left: 4px solid var(--primary-color);
-            margin: 1rem 0;
-            font-family: monospace;
-        }
-        
-        .btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.7rem 1.5rem;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-            font-weight: bold;
-            margin-top: 1rem;
-        }
-        
-        .btn:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 2rem;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .feature-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-top: 3px solid var(--primary-color);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">🛍️</div>
-            <h1>AliExpress Scraper API</h1>
-            <p>Powerful product scraping and ranking API service</p>
-        </header>
-        
-        <div class="api-info">
-            <h2>API Endpoint</h2>
-            <div class="endpoint">
-                GET /scrape?product_name={product_name}&top_n={results_count}
-            </div>
-            <a href="/docs" class="btn">View API Documentation</a>
-        </div>
-        
-        <div class="features">
-            <div class="feature-card">
-                <h3>Real-time Data</h3>
-                <p>Get fresh product data directly from AliExpress with every request.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Smart Ranking</h3>
-                <p>AI-powered product ranking based on ratings, sales, and price.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Easy Integration</h3>
-                <p>Simple REST API that works with any programming language.</p>
-            </div>
-        </div>
-        
-        <footer>
-            <p>© 2025 AliExpress Scraper API | Powered by FastAPI</p>
-        </footer>
-    </div>
-</body>
-</html>
-    """
+    path = Path("static/home.html")
+    return path.read_text(encoding="utf-8")
+
+@app.get("/test", response_class=HTMLResponse)
+async def test_page():
+    path = Path("static/test.html")
+    return path.read_text(encoding="utf-8")
 
 @app.get("/scrape")
 async def scrape_aliexpress(product_name: str, top_n: int = 10):
