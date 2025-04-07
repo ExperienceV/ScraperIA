@@ -1,2 +1,2 @@
 # ScraperIA
-Example of how to integrate AI a Web Scraper.
+This project is used to scrape products from Aliexpress and then obtain the top ten through LLM processes.
