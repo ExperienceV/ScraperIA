@@ -81,7 +81,7 @@ async def scrape_search(query: str, session: httpx.AsyncClient, sort_type="defau
 
 async def run(product: str = "iphone 14"):
     client = httpx.AsyncClient(follow_redirects=True)
-    data = await scrape_search(query=product, session=client, max_pages=2)
+    data = await scrape_search(query=product, session=client, max_pages=1)
     #data_json = json.dumps(data, indent=2, ensure_ascii=False)
     ic(f"Productos obtenidos: {data}")
     return data

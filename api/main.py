@@ -20,6 +20,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Experience Endpoints
+
 @app.get("/", response_class=HTMLResponse)
 async def welcome():
     """
@@ -64,6 +67,7 @@ async def scrape_aliexpress(product_name: str, top_n: int = 10):
 
         # Get the best 10 products   
         ranked_data = await rank_products_with_llm(
+            search=product_name,
             products=scraped_data,
             top_n=top_n)
         
@@ -77,3 +81,36 @@ async def scrape_aliexpress(product_name: str, top_n: int = 10):
             status_code=500,
             content={"error": "Product scraping failed", "details": str(e)}
         )
+    
+
+# Liba Endpoints
+
+@app.get("/index", response_class=HTMLResponse)
+async def index():
+    """
+    Root endpoint that returns a welcome page with API documentation.
+    
+    Returns:
+        HTMLResponse: A responsive HTML page containing:
+            - API introduction
+            - Key features
+            - Example endpoint
+            - Link to interactive docs
+    """
+    path = Path("static/index.html")
+    return path.read_text(encoding="utf-8")
+
+@app.get("/results", response_class=HTMLResponse)
+async def results():
+    """
+    Root endpoint that returns a welcome page with API documentation.
+    
+    Returns:
+        HTMLResponse: A responsive HTML page containing:
+            - API introduction
+            - Key features
+            - Example endpoint
+            - Link to interactive docs
+    """
+    path = Path("static/results.html")
+    return path.read_text(encoding="utf-8")

@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 import os
 import time
 
-async def rank_products_with_llm(products: List[Dict], top_n: int = 10) -> List[Dict]:
+async def rank_products_with_llm(search: str, products: List[Dict], top_n: int = 10) -> List[Dict]:
     """
     Ranks products using LLM (DeepSeek/OpenAI) with comprehensive debugging.
     
@@ -80,7 +80,9 @@ async def rank_products_with_llm(products: List[Dict], top_n: int = 10) -> List[
             1. Rating (prioritize >4.0)
             2. Sales volume ('sales' field)
             3. Price (lower is better)
-            
+            4. Very important, make sure the titles of the top 10 products are directly related to the search query and don't show me derivatives, for example: If I ask for a laptop, give me a laptop; if I ask for a laptop accessory, give me a laptop accessory; if I ask for a phone, give me a phone and not its accessories.
+                Please, my life depends on it.
+                
             Return ONLY JSON with: {{"top_products": [product_list]}}
             
             Products: {valid_products}
