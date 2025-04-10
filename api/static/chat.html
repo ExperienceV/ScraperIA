@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-logo">
+                    <i class="fas fa-comments"></i>
+                </div>
+                
+                <a href="chat.html" class="nav-item active">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Chat</span>
+                </a>
+                
+                <a href="favorites.html" class="nav-item">
+                    <i class="fas fa-star"></i>
+                    <span>Favorites</span>
+                </a>
+                
+                <a href="archive.html" class="nav-item">
+                    <i class="fas fa-archive"></i>
+                    <span>Archive</span>
+                </a>
+                
+                <div class="user-avatar" id="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            
+            <!-- Chat Section -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h2 class="chat-title">Web Assistant</h2>
+                    
+                    <div class="chat-actions">
+                        <button class="chat-btn" id="toggle-products">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message assistant-message">
+                            <div class="message-content">
+                                Hello! I can help you find information. What are you looking for?
+                            </div>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-container">
+                        <textarea class="chat-input" id="user-input" placeholder="Ask me to find something..." rows="1"></textarea>
+                        <button class="send-button" id="send-button" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Section -->
+            <div class="products-section" id="products-section">
+                <div class="products-header">
+                    <h2 class="products-title">
+                        <i class="fas fa-search"></i>
+                        Results
+                        <span class="product-count" id="product-count">0</span>
+                    </h2>
+                </div>
+                
+                <div class="products-container">
+                    <div class="products-grid" id="products-grid">
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <p>No results yet</p>
+                            <p class="text-sm">Ask me to search for something!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Product Preview -->
+    <div class="floating-product" id="floating-product">
+        <div class="floating-header">
+            <div class="floating-title">New Item Found</div>
+            <div class="floating-actions">
+                <button class="floating-action favorite-btn">
+                    <i class="fas fa-star"></i>
+                </button>
+                <button class="floating-action save-btn">
+                    <i class="fas fa-archive"></i>
+                </button>
+                <button class="floating-action close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="floating-content">
+            <img src="" class="floating-image" id="floating-image">
+            <div class="floating-info">
+                <div class="floating-product-title" id="floating-title">Item Title</div>
+                <div class="floating-product-price" id="floating-price">$0.00</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">
+            <div class="notification-title" id="notification-title">Success</div>
+            <div class="notification-message" id="notification-message">Operation completed</div>
+        </div>
+        <div class="close-notification">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // DOM elements
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const chatMessages = document.getElementById('chat-messages');
+            const productsGrid = document.getElementById('products-grid');
+            const productCount = document.getElementById('product-count');
+            const toggleProductsBtn = document.getElementById('toggle-products');
+            const productsSection = document.getElementById('products-section');
+            const floatingProduct = document.getElementById('floating-product');
+            const floatingImage = document.getElementById('floating-image');
+            const floatingTitle = document.getElementById('floating-title');
+            const floatingPrice = document.getElementById('floating-price');
+            const favoriteBtn = document.querySelector('.favorite-btn');
+            const saveBtn = document.querySelector('.save-btn');
+            const closeBtn = document.querySelector('.close-btn');
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationMessage = document.getElementById('notification-message');
+            const closeNotification = document.querySelector('.close-notification');
+            
+            // State variables
+            let currentProduct = null;
+            let socket = null;
+            
+            // Initialize WebSocket
+            function initWebSocket() {
+                socket = new WebSocket(`ws://${window.location.host}/ws_assistent`);
+                
+                socket.onopen = function(e) {
+                    console.log("WebSocket connection established");
+                    addMessage('assistant', "Connected to AI assistant. You can start asking me to find products for you!");
+                };
+                
+                socket.onmessage = function(event) {
+                    const response = JSON.parse(event.data);
+                    
+                    if (response.assistant_message) {
+                        addMessage('assistant', response.assistant_message);
+                    }
+                    
+                    if (response.products && Object.keys(response.products).length > 0) {
+                        showNewProduct(response.products);
+                    }
+                };
+                
+                socket.onclose = function(event) {
+                    if (event.wasClean) {
+                        addMessage('assistant', `Connection closed: ${event.reason || 'No reason provided'}`);
+                    } else {
+                        addMessage('assistant', 'Connection lost. Trying to reconnect...');
+                        setTimeout(initWebSocket, 5000);
+                    }
+                };
+                
+                socket.onerror = function(error) {
+                    addMessage('assistant', `WebSocket error: ${error.message}`);
+                };
+            }
+            
+            // Initialize the app
+            initWebSocket();
+            
+            // Chat functionality
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                sendButton.disabled = this.value.trim() === '';
+            });
+            
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message && socket && socket.readyState === WebSocket.OPEN) {
+                    addMessage('user', message);
+                    showTypingIndicator();
+                    socket.send(message);
+                    userInput.value = '';
+                    userInput.style.height = 'auto';
+                    sendButton.disabled = true;
+                }
+            }
+            
+            function addMessage(sender, text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', `${sender}-message`);
+                
+                const messageContent = document.createElement('div');
+                messageContent.classList.add('message-content');
+                messageContent.textContent = text;
+                
+                const messageTime = document.createElement('div');
+                messageTime.classList.add('message-time');
+                messageTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(messageTime);
+                chatMessages.appendChild(messageDiv);
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.classList.add('typing-indicator');
+                
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('span');
+                    dot.classList.add('typing-dot');
+                    typingDiv.appendChild(dot);
+                }
+                
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Products functionality
+            toggleProductsBtn.addEventListener('click', function() {
+                productsSection.classList.toggle('collapsed');
+                this.classList.toggle('active');
+            });
+            
+            function showNewProduct(products) {
+                const firstProductId = Object.keys(products)[0];
+                const firstProduct = products[firstProductId];
+                currentProduct = firstProduct;
+                
+                floatingImage.src = firstProduct.image || 'https://via.placeholder.com/150?text=No+Image';
+                floatingTitle.textContent = firstProduct.title || 'No title';
+                floatingPrice.textContent = firstProduct.price || 'Price not available';
+                
+                floatingProduct.classList.add('show');
+                
+                updateProductsGrid(products);
+            }
+            
+            function updateProductsGrid(products) {
+                const emptyState = productsGrid.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                
+                let count = 0;
+                
+                for (const [id, product] of Object.entries(products)) {
+                    if (document.getElementById(`product-${id}`)) continue;
+                    
+                    const productCard = document.createElement('div');
+                    productCard.classList.add('product-card');
+                    productCard.id = `product-${id}`;
+                    productCard.style.animationDelay = `${count * 0.1}s`;
+                    
+                    productCard.innerHTML = `
+                        <div class="product-image-container">
+                            <img src="${product.image || 'https://via.placeholder.com/150?text=No+Image'}" class="product-image" alt="${product.title || ''}">
+                            <div class="product-actions">
+                                <button class="product-action favorite" data-id="${id}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="product-action save" data-id="${id}">
+                                    <i class="fas fa-archive"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-title">${product.title || 'No title'}</div>
+                            <div class="product-price">${product.price || 'Price not available'}</div>
+                            ${product.source ? `<div class="product-source"><i class="fas fa-globe"></i> ${product.source}</div>` : ''}
+                        </div>
+                    `;
+                    
+                    productsGrid.prepend(productCard);
+                    count++;
+                }
+                
+                const totalProducts = productsGrid.querySelectorAll('.product-card').length;
+                productCount.textContent = totalProducts;
+                
+                document.querySelectorAll('.product-action.favorite').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-id');
+                        saveProduct(productId, 'favorite');
+                    });
+                });
+                
+                document.querySelectorAll('.product-action.save').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-id');
+                        saveProduct(productId, 'archive');
+                    });
+                });
+            }
+            
+            // Floating product actions
+            favoriteBtn.addEventListener('click', function() {
+                if (currentProduct) {
+                    saveProduct(currentProduct.id, 'favorite');
+                    floatingProduct.classList.remove('show');
+                }
+            });
+            
+            saveBtn.addEventListener('click', function() {
+                if (currentProduct) {
+                    saveProduct(currentProduct.id, 'archive');
+                    floatingProduct.classList.remove('show');
+                }
+            });
+            
+            closeBtn.addEventListener('click', function() {
+                floatingProduct.classList.remove('show');
+            });
+            
+            // Save product to favorites or archive
+            async function saveProduct(productId, type) {
+                if (!currentProduct) return;
+                
+                try {
+                    const endpoint = type === 'favorite' ? '/save_favorite' : '/save_archive';
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify(currentProduct)
+                    });
+                    
+                    if (response.ok) {
+                        showNotification('success', 'Success', `Product ${type === 'favorite' ? 'added to favorites' : 'archived'} successfully`);
+                    } else {
+                        showNotification('error', 'Error', `Failed to save product`);
+                    }
+                } catch (error) {
+                    showNotification('error', 'Error', 'Network error. Please try again.');
+                }
+            }
+            
+            // Notification system
+            function showNotification(type, title, message) {
+                notification.className = `notification ${type}`;
+                notification.querySelector('i').className = `fas ${
+                    type === 'success' ? 'fa-check-circle' : 
+                    type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
+                }`;
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            }
+            
+            closeNotification.addEventListener('click', function() {
+                notification.classList.remove('show');
+            });
+            
+            // Close floating product when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!floatingProduct.contains(e.target) && e.target !== toggleProductsBtn) {
+                    floatingProduct.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,140 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Research Pro - Search</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap">
-    <link rel="stylesheet" href="styles/liba.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'><path d='M12 2L1 12h3v9h6v-6h4v6h6v-9h3L12 2z'/></svg>">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/auth.css">
 </head>
 <body>
-    <div class="particle-bg" id="particleBg"></div>
-
-    <main>
-        <div class="title">
-            <h1 class="title-floating">AI Research Pro</h1>
-            <p class="p-floating">Advanced artificial intelligence for your research needs</p>
-        </div>
-
-        <form id="searchForm" class="search-container">
-            <div class="search-bar">
-                <input type="text" placeholder="Search for products..." id="searchInput" name="query" class="typewriter-cursor" required>
-                <button type="submit" class="search-button">
-                    <svg viewBox="0 0 24 24" width="24" height="24">
-                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                    </svg>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Sign in to your account</p>
+            </div>
+            
+            <form class="auth-form" id="login-form">
+                <div class="form-group">
+                    <label for="login-email" class="form-label">Email Address</label>
+                    <input type="email" id="login-email" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password" class="form-label">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="login-password" class="form-input" required>
+                        <i class="fas fa-eye toggle-password" id="toggle-login-password"></i>
+                    </div>
+                    <span class="form-error" id="login-error"></span>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="login-btn">
+                    <div class="spinner"></div>
+                    <span>Sign In</span>
                 </button>
-            </div>
-            <div id="loading" class="loading-indicator" style="display: none;">
-                <div class="loading-spinner"></div>
-                <p>Searching products on AliExpress...</p>
-            </div>
-        </form>
-    </main>
-
-    <div class="footer-container" id="footerContainer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="#" aria-label="Home">Home</a>
-                <a href="#" aria-label="Features">Features</a>
-                <a href="#" aria-label="Documentation">Docs</a>
-                <a href="#" aria-label="Contact">Contact</a>
-            </div>
-            <div class="footer-social">
-                <a href="#" class="social-icon" aria-label="Twitter">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                    </svg>
-                </a>
-                <a href="#" class="social-icon" aria-label="GitHub">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                    </svg>
-                </a>
-                <a href="#" class="social-icon" aria-label="LinkedIn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                        <rect x="2" y="9" width="4" height="12"></rect>
-                        <circle cx="4" cy="4" r="2"></circle>
-                    </svg>
-                </a>
-            </div>
-            <p class="copyright">© 2023 AI Research Pro. All rights reserved.</p>
+                
+                <div class="auth-switch">
+                    Don't have an account? <a href="signup.html" class="auth-link">Sign up</a>
+                </div>
+            </form>
         </div>
-    </div>
-
-    <div class="scroll-arrow" id="toggleFooter">
-        <svg viewBox="0 0 24 24">
-            <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
-        </svg>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const particleBg = document.getElementById('particleBg');
-            const particleCount = window.innerWidth < 768 ? 20 : 50;
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const loginForm = document.getElementById('login-form');
+            const loginBtn = document.getElementById('login-btn');
+            const toggleLoginPassword = document.getElementById('toggle-login-password');
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
+            const loginError = document.getElementById('login-error');
             
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.animationDuration = `${10 + Math.random() * 20}s`;
-                particle.style.animationDelay = `${Math.random() * 5}s`;
-                particleBg.appendChild(particle);
-            }
-            
-            const input = document.getElementById('searchInput');
-            const placeholderText = "Search for insights...";
-            let i = 0;
-            
-            if (input.value === '') {
-                input.placeholder = '';
-                const typeWriter = () => {
-                    if (i < placeholderText.length) {
-                        input.placeholder += placeholderText.charAt(i);
-                        i++;
-                        setTimeout(typeWriter, 50 + Math.random() * 50);
-                    }
-                };
-                typeWriter();
-            }
-
-            const toggleFooter = document.getElementById('toggleFooter');
-            const footerContainer = document.getElementById('footerContainer');
-
-            toggleFooter.addEventListener('click', function() {
-                const isVisible = footerContainer.classList.toggle('visible');
-                this.classList.toggle('visible');
-                
-                // Fix for the footer covering the arrow
-                if (isVisible) {
-                    this.style.transform = 'translateX(-50%) rotate(180deg) translateY(0)';
-                } else {
-                    this.style.transform = 'translateX(-50%) translateY(0)';
-                }
+            // Toggle password visibility
+            toggleLoginPassword.addEventListener('click', function() {
+                const type = loginPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                loginPassword.setAttribute('type', type);
+                this.classList.toggle('fa-eye-slash');
             });
-
-            // Form submission
-            const searchForm = document.getElementById('searchForm');
-            const loadingIndicator = document.getElementById('loading');
             
-            searchForm.addEventListener('submit', function(e) {
+            // Login form submission
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const query = document.getElementById('searchInput').value.trim();
+                loginError.textContent = '';
+                loginError.classList.remove('show');
                 
-                if (query) {
-                    loadingIndicator.style.display = 'flex';
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value.trim();
+                
+                if (!email || !password) {
+                    showError(loginError, 'Please fill in all fields');
+                    return;
+                }
+                
+                try {
+                    loginBtn.classList.add('loading');
                     
-                    // Here you would normally send the data to your backend
-                    console.log('Searching for:', query);
+                    const response = await fetch('/auth', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    });
                     
-                    // Simulate loading (replace with actual fetch/websocket)
-                    setTimeout(() => {
-                        loadingIndicator.style.display = 'none';
-                        window.location.href = `results.html?query=${encodeURIComponent(query)}`;
-                    }, 1500);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        localStorage.setItem('authToken', data.token);
+                        window.location.href = 'chat.html';
+                    } else {
+                        showError(loginError, data.message || 'Login failed');
+                    }
+                } catch (error) {
+                    showError(loginError, 'Network error. Please try again.');
+                } finally {
+                    loginBtn.classList.remove('loading');
                 }
             });
+            
+            // Helper function
+            function showError(element, message) {
+                element.textContent = message;
+                element.classList.add('show');
+            }
         });
     </script>
 </body>
