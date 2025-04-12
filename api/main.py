@@ -40,7 +40,7 @@ async def welcome():
 
 @app.get("/test", response_class=HTMLResponse)
 async def test_page():
-    path = Path("static/test-isa/   test.html")
+    path = Path("static/test-isa/test.html")
     return path.read_text(encoding="utf-8")
 
 @app.get("/scrape")
@@ -82,35 +82,3 @@ async def scrape_aliexpress(product_name: str, top_n: int = 10):
             content={"error": "Product scraping failed", "details": str(e)}
         )
     
-
-# Liba Endpoints
-
-@app.get("/index", response_class=HTMLResponse)
-async def index():
-    """
-    Root endpoint that returns a welcome page with API documentation.
-    
-    Returns:
-        HTMLResponse: A responsive HTML page containing:
-            - API introduction
-            - Key features
-            - Example endpoint
-            - Link to interactive docs
-    """
-    path = Path("static/index.html")
-    return path.read_text(encoding="utf-8")
-
-@app.get("/results", response_class=HTMLResponse)
-async def results():
-    """
-    Root endpoint that returns a welcome page with API documentation.
-    
-    Returns:
-        HTMLResponse: A responsive HTML page containing:
-            - API introduction
-            - Key features
-            - Example endpoint
-            - Link to interactive docs
-    """
-    path = Path("static/results.html")
-    return path.read_text(encoding="utf-8")
