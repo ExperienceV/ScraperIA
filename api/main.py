@@ -44,7 +44,7 @@ async def test_page():
     return path.read_text(encoding="utf-8")
 
 @app.get("/scrape")
-async def scrape_aliexpress(product_name: str, top_n: int = 10):
+async def scrape_aliexpress(product_name: str, available_amount: int, top_n: int = 10):
     """
     Scrape and rank AliExpress products based on search query.
     
@@ -68,6 +68,7 @@ async def scrape_aliexpress(product_name: str, top_n: int = 10):
         # Get the best 10 products   
         ranked_data = await rank_products_with_llm(
             search=product_name,
+            amount=available_amount,
             products=scraped_data,
             top_n=top_n)
         
