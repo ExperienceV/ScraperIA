@@ -35,12 +35,12 @@ async def welcome():
             - Example endpoint
             - Link to interactive docs
     """
-    path = Path("static/home.html")
+    path = Path("static/test-isa/home.html")
     return path.read_text(encoding="utf-8")
 
 @app.get("/test", response_class=HTMLResponse)
 async def test_page():
-    path = Path("static/test.html")
+    path = Path("static/test-isa/   test.html")
     return path.read_text(encoding="utf-8")
 
 @app.get("/scrape")
